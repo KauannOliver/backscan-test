@@ -1,0 +1,12 @@
+{
+  "runtime": { "python": "3.11" },
+  "functions": {
+    "api/send-location.py": {
+      "maxDuration": 10,
+      "memory": 256
+    }
+  },
+  "rewrites": [
+    { "source": "/send-location", "destination": "/api/send-location" }
+  ]
+}
